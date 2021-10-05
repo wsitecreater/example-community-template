@@ -91,20 +91,26 @@ ___WEB_PERMISSIONS___
 ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
 // Enter your template code here.
-const queryPermission = require('queryPermission');
-const getReferrerUrl = require('getReferrerUrl');
-let referrer;
-if (queryPermission('get_referrer', 'query')) {
-  referrer = getReferrerUrl('queryParams');
+const sendPixel = require('sendPixel');
+const encodeUri = require('encodeUri');
+const encodeUriComponent = require('encodeUriComponent');
+
+let url = encodeUri(data['url']);
+
+if (data['useCacheBuster']) {
+  const encode = require('encodeUriComponent');
+  const cacheBusterQueryParam = data['cacheBusterQueryParam'] || 'gtmcb';
+  const last = url.charAt(url.length - 1);
+  let delimiter = '&';
+  if (url.indexOf('?') < 0) {
+    delimiter = '?';
+  } else if (last == '?' || last == '&') {
+    delimiter = '';
+  }
+  url += delimiter +
+      encodeUriComponent(cacheBusterQueryParam) + '=' + encodeUriComponent(data['randomNumber']);
 }
-
-var log = require('logToConsole');
-log('data =', data);
-
-// Call data.gtmOnSuccess when the tag is finished.
-data.gtmOnSuccess();
-
-
+sendPixel(url, data['gtmOnSuccess'], data['gtmOnFailure']);
 ___NOTES___
 
 Created on 9/2/2019, 1:02:37 PM
